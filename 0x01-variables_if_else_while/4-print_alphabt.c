@@ -12,7 +12,7 @@ int main(void)
 
 	for (i = 0; i < 26; i++)
 	{
-		if(alp[i]!='e' && alp[i]!='q')
+		if (alp[i] != 'e' && alp[i] != 'q')
 		{
 			putchar(alp[i]);
 		}
