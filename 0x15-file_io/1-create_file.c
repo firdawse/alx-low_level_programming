@@ -3,13 +3,13 @@
 #include <unistd.h>
 
 /**
- * create_file -function that creates  a file.
- * @filename: pointer to the name of filename we will create .
- * @text_content: A pointer to the part of text in the file .
+ * create_file - Creates a file.
+ * @filename: Pointer to the name of the file to create.
+ * @text_content: Pointer to the content to write into the file.
  *
- * Return: If the function fails - -1.
- *         or  - 1.
+ * Return: 1 on success, -1 on failure.
  */
+
 int create_file(const char *filename, char *text_content)
 {
 	int file, n, length = 0;
