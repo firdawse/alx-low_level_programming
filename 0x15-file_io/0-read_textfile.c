@@ -4,50 +4,56 @@
 #include <unistd.h>
 
 /**
- * read_textfile- Read text file and print to STDOUT.
- * @filename: text file being read
- * @letters: number of letters to be read
- * Return: w - actual number of bytes read and printed
- *         0 when function fails or filename is NULL.
+ * read_textfile-  it fisrt read texfile then  print to STDOUT.
+ * @filename: the textfile that will be read
+ * @letters: nbr of letterss not  read
+ * Return: n - nbr of bytes read
+ *         0 if function fails or filename is NULL.
  */
 ssize_t read_textfile(const char *filename, size_t letters)
 {
-	int fd;
-	char *buf;
-	ssize_t t, w;
+	int file;
+	char *buffer;
+	ssize_t t, n;
 
 	if (filename == NULL)
 		return (0);
 
-	fd = open(filename, O_RDONLY);
-	if (fd == -1)
+	file = open(filename, O_RDONLY);
+	
+	
+	if (file == -1)
 		return (0);
 
-	buf = malloc(sizeof(char) * letters);
-	if (buf == NULL)
+	buffer  = malloc(sizeof(char) * letters);
+	
+	
+	if (buffer == NULL)
 	{
-		close(fd);
+		close(file);
 		return (0);
 	}
 
-	t = read(fd, buf, letters);
+	t = read(file, buffer, letters);
+
+
 	if (t == -1)
 	{
-		free(buf);
-		close(fd);
+		free(buffer);
+		close(file);
 		return (0);
 	}
 
-	w = write(STDOUT_FILENO, buf, t);
-	if (w == -1)
+	n = write(STDOUT_FILENO, buffer, t);
+	if (n == -1)
 	{
-		free(buf);
-		close(fd);
+		free(buffer);
+		close(file);
 		return (0);
 	}
 
-	free(buf);
-	close(fd);
-	return (w);
+	free(buffer);
+	close(file);
+	return (n);
 }
 
