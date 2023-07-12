@@ -1,7 +1,7 @@
 #include "main.h"
 
 /**
- * get_bit - returns the value of a bit at a given index.
+ * get_bit - returns the bit value at a given index.
  * @num: unsigned long int input.
  * @ind: index of the bit.
  *
@@ -15,7 +15,7 @@ int get_bit(unsigned long int num, unsigned int ind)
 	if (num == 0 && ind < 64)
 		return (0);
 
-	for (i = 0; i <= 63; n >>= 1, i++)
+	for (i = 0; i <= 63; num >>= 1, i++)
 	{
 		if (ind == i)
 		{
