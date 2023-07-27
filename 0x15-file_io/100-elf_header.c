@@ -1,77 +1,96 @@
+#include <elf.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <elf.h>
+#include "main.h"
 
 /**
- * print_error - Prints an error message to stderr and exits with code 98.
- * @message: The error message to be printed.
+ * _strncmp - compare two strings
+ * @s1: the first string
+ * @s2: the second string
+ * @n: the max number of bytes to compare
+ *
+ * Return: 0 if the first n bytes of s1 and s2 are equal, otherwise non-zero
  */
-void print_error(const char *message)
+int _strncmp(const char *s1, const char *s2, size_t n)
 {
-    fprintf(stderr, "%s\n", message);
-    exit(98);
+	for ( ; n && *s1 && *s2; --n, ++s1, ++s2)
+	{
+		if (*s1 != *s2)
+			return (*s1 - *s2);
+	}
+	if (n)
+	{
+		if (*s1)
+			return (1);
+		if (*s2)
+			return (-1);
+	}
+	return (0);
 }
+
+
 
 /**
- * display_elf_header_info - Displays information about the ELF header.
- * @elf_header: A pointer to the ELF header structure to be displayed.
+ * _read - read from a file and print an error message upon failure
+ * @fd: the file descriptor to read from
+ * @buf: the buffer to write to
+ * @count: the number of bytes to read
  */
-void display_elf_header_info(Elf64_Ehdr *elf_header)
+void _read(int fd, char *buf, size_t count)
 {
-    int i; 
-
-    printf("ELF Header:\n");
-
-    printf("  Magic: ");
-    for (i = 0; i < EI_NIDENT; i++)
-        printf("%02x ", elf_header->e_ident[i]);
-    printf("\n");
-
-    
+	if (read(fd, buf, count) != -1)
+		return;
+	write(STDERR_FILENO, "Error: Can't read from file\n", 28);
+	close_elff(fd);
+	exit(98);
 }
+
+
 
 /**
- * main - Entry point of the program.
- * @argc: The number of command-line arguments.
- * @argv: An array of pointers to the command-line arguments.
- * Return: 0 on success, non-zero on failure.
+ * main - copy a file's contents to another file
+ * @argc: the argument count
+ * @argv: the argument values
+ *
+ * Return: Always 0
  */
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
-    const char *filename; 
-    int file_descriptor;
-    Elf64_Ehdr elf_header;
+	unsigned char buffer[18];
+	unsigned int bit_mode;
+	int big_endian;
+	int fd;
 
-    if (argc != 2)
-    {
-        print_error("Usage: elf_header elf_filename");
-    }
+	if (argc != 2)
+	{
+		write(STDERR_FILENO, "Usage: elf_header elf_filename\n", 31);
+		exit(98);
+	}
 
-    filename = argv[1];
-    file_descriptor = open(filename, O_RDONLY);
-    if (file_descriptor == -1)
-    {
-        print_error("Error opening file");
-    }
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1)
+	{
+		write(STDERR_FILENO, "Error: Can't read from file\n", 28);
+		exit(98);
+	}
 
-    if (read(file_descriptor, &elf_header, sizeof(Elf64_Ehdr)) != sizeof(Elf64_Ehdr))
-    {
-        print_error("Error reading ELF header");
-    }
+	_read(fd, (char *) buffer, 18);
 
-    if (elf_header.e_ident[EI_MAG0] != ELFMAG0 ||
-        elf_header.e_ident[EI_MAG1] != ELFMAG1 ||
-        elf_header.e_ident[EI_MAG2] != ELFMAG2 ||
-        elf_header.e_ident[EI_MAG3] != ELFMAG3)
-    {
-        print_error("Not an ELF file");
-    }
+	print_magic(buffer);
+	bit_mode = print_class(buffer);
+	big_endian = print_data(buffer)print_(buffer);
+	print_osabi(buffer);
+	print_abi(buffer);
+	print_type(buffer, big_endian);
 
-    display_elf_header_info(&elf_header);
+	lseek(fd, 24, SEEK_SET);
+	_read(fd, (char *) buffer, bit_mode / 8);
 
-    close(file_descriptor);
-    return 0;
+	print_entry(buffer, bit_mode, big_endian);
+
+	close_elff(fd);
+
+	return (0);
 }
-
