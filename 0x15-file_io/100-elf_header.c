@@ -30,10 +30,10 @@ int _strncmp(const char *s1, const char *s2, size_t n)
 }
 
 /**
- * _close - close a file descriptor and print an error message upon failure
+ * elf_close - close a file descriptor and print an error message upon failure
  * @fd: the file descriptor to close
  */
-void _close(int fd)
+void elf_close(int fd)
 {
 	if (close(fd) != -1)
 		return;
@@ -42,47 +42,48 @@ void _close(int fd)
 }
 
 /**
- * _read - read from a file and print an error message upon failure
+ * file_read - read from a file and print an error message upon failure
  * @fd: the file descriptor to read from
  * @buf: the buffer to write to
  * @count: the number of bytes to read
  */
-void _read(int fd, char *buf, size_t count)
+void file_read(int fd, char *buf, size_t count)
 {
 	if (read(fd, buf, count) != -1)
 		return;
 	write(STDERR_FILENO, "Error: Can't read from file\n", 28);
-	_close(fd);
+	elf_close(fd);
 	exit(98);
 }
 
 /**
- * elf_magic - print ELF magic
+ * magic - print ELF magic
  * @buffer: the ELF header
  */
-void elf_magic(const unsigned char *buffer)
+void magic(const unsigned char *buffer)
 {
-	unsigned int i;
+	int index;
 
-	if (_strncmp((const char *) buffer, ELFMAG, 4))
+	printf("  Magic:   ");
+
+	for (index = 0; index < EI_NIDENT; index++)
 	{
-		write(STDERR_FILENO, "Error: Not an ELF file\n", 23);
-		exit(98);
+		printf("%02x", buffer[index]);
+
+		if (index == EI_NIDENT - 1)
+			printf("\n");
+		else
+			printf(" ");
 	}
-
-	printf("ELF Header:\n  Magic:   ");
-
-	for (i = 0; i < 16; ++i)
-		printf("%02x%c", buffer[i], i < 15 ? ' ' : '\n');
 }
 
 /**
- * elf_class - print ELF class
+ * class - print ELF class
  * @buffer: the ELF header
  *
  * Return: bit mode (32 or 64)
  */
-size_t elf_class(const unsigned char *buffer)
+size_t class(const unsigned char *buffer)
 {
 	printf("  %-34s ", "Class:");
 
@@ -101,12 +102,12 @@ size_t elf_class(const unsigned char *buffer)
 }
 
 /**
- * elf_data - print ELF data
+ * data - print ELF data
  * @buffer: the ELF header
  *
  * Return: 1 if big endian, otherwise 0
  */
-int elf_data(const unsigned char *buffer)
+int data(const unsigned char *buffer)
 {
 	printf("  %-34s ", "Data:");
 
@@ -125,10 +126,10 @@ int elf_data(const unsigned char *buffer)
 }
 
 /**
- * elf_version - print ELF version
+ * version - print ELF version
  * @buffer: the ELF header
  */
-void elf_version(const unsigned char *buffer)
+void version(const unsigned char *buffer)
 {
 	printf("  %-34s %u", "Version:", buffer[EI_VERSION]);
 
@@ -139,10 +140,10 @@ void elf_version(const unsigned char *buffer)
 }
 
 /**
- * elf_osabi - print ELF OS/ABI
+ * osabi - print ELF OS/ABI
  * @buffer: the ELF header
  */
-void elf_osabi(const unsigned char *buffer)
+void osabi(const unsigned char *buffer)
 {
 	const char *os_table[19] = {
 		"UNIX - System V",
@@ -175,60 +176,62 @@ void elf_osabi(const unsigned char *buffer)
 }
 
 /**
- * elf_abivers - print ELF ABI version
+ * abi - print ELF ABI version
  * @buffer: the ELF header
  */
-void elf_abivers(const unsigned char *buffer)
+void abi(const unsigned char *buffer)
 {
-	printf("  %-34s %u\n", "ABI Version:", buffer[EI_ABIVERSION]);
+	printf("  ABI Version:                       %d\n",
+	       buffer[EI_ABIVERSION]);
 }
 
 /**
- * elf_type - print ELF type
+ * type - print ELF type
  * @buffer: the ELF header
- * @big_endian: endianness (big endian if non-zero)
+ * @needed: endianness (big endian if non-zero)
  */
-void elf_type(const unsigned char *buffer, int big_endian)
+void type(const unsigned char *buffer, int needed)
 {
-	char *type_table[5] = {
-		"NONE (No file type)",
-		"REL (Relocatable file)",
-		"EXEC (Executable file)",
-		"DYN (Shared object file)",
-		"CORE (Core file)"
-	};
-	unsigned int type;
+	if (buffer[EI_DATA] == ELFDATA2MSB)
+		needed >>= 8;
 
-	printf("  %-34s ", "Type:");
+	printf("  Type:                              ");
 
-	if (big_endian)
-		type = 0x100 * buffer[16] + buffer[17];
-	else
-		type = 0x100 * buffer[17] + buffer[16];
-
-	if (type < 5)
-		printf("%s\n", type_table[type]);
-	else if (type >= ET_LOOS && type <= ET_HIOS)
-		printf("OS Specific: (%4x)\n", type);
-	else if (type >= ET_LOPROC && type <= ET_HIPROC)
-		printf("Processor Specific: (%4x)\n", type);
-	else
-		printf("<unknown: %x>\n", type);
+	switch (needed)
+	{
+	case ET_NONE:
+		printf("NONE (None)\n");
+		break;
+	case ET_REL:
+		printf("REL (Relocatable file)\n");
+		break;
+	case ET_EXEC:
+		printf("EXEC (Executable file)\n");
+		break;
+	case ET_DYN:
+		printf("DYN (Shared object file)\n");
+		break;
+	case ET_CORE:
+		printf("CORE (Core file)\n");
+		break;
+	default:
+		printf("<unknown: %x>\n", needed);
+	}
 }
 
 /**
- * elf_entry - print entry point address
+ * entry - print entry point address
  * @buffer: string containing the entry point address
  * @bit_mode: bit mode (32 or 64)
- * @big_endian: endianness (big endian if non-zero)
+ * @needed: endianness (big endian if non-zero)
  */
-void elf_entry(const unsigned char *buffer, size_t bit_mode, int big_endian)
+void entry(const unsigned char *buffer, size_t bit_mode, int needed)
 {
 	int address_size = bit_mode / 8;
 
 	printf("  %-34s 0x", "Entry point address:");
 
-	if (big_endian)
+	if (needed)
 	{
 		while (address_size && !*(buffer))
 			--address_size, ++buffer;
@@ -255,7 +258,7 @@ void elf_entry(const unsigned char *buffer, size_t bit_mode, int big_endian)
 }
 
 /**
- * main - copy a file's contents to another file
+ * main - copy the content of a file to another one
  * @argc: the argument count
  * @argv: the argument values
  *
@@ -265,7 +268,7 @@ int main(int argc, const char *argv[])
 {
 	unsigned char buffer[18];
 	unsigned int bit_mode;
-	int big_endian;
+	int needed;
 	int fd;
 
 	if (argc != 2)
@@ -277,26 +280,26 @@ int main(int argc, const char *argv[])
 	fd = open(argv[1], O_RDONLY);
 	if (fd == -1)
 	{
-		write(STDERR_FILENO, "Error: Can't read from file\n", 28);
+		perror("Error: Can't read from file");
 		exit(98);
 	}
 
-	_read(fd, (char *) buffer, 18);
+	file_read(fd, (char *) buffer, 18);
 
-	elf_magic(buffer);
-	bit_mode = elf_class(buffer);
-	big_endian = elf_data(buffer);
-	elf_version(buffer);
-	elf_osabi(buffer);
-	elf_abivers(buffer);
-	elf_type(buffer, big_endian);
+	magic(buffer);
+	bit_mode = class(buffer);
+	needed = data(buffer);
+	version(buffer);
+	osabi(buffer);
+	abi(buffer);
+	type(buffer, needed);
 
 	lseek(fd, 24, SEEK_SET);
-	_read(fd, (char *) buffer, bit_mode / 8);
+	file_read(fd, (char *) buffer, bit_mode / 8);
 
-	elf_entry(buffer, bit_mode, big_endian);
+	entry(buffer, bit_mode, needed);
 
-	_close(fd);
+	elf_close(fd);
 
 	return (0);
 }
