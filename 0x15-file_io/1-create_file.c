@@ -2,6 +2,8 @@
 #include <sys/stat.h> 
 #include <unistd.h> 
 #include <string.h>
+#include "main.h"
+
 /**
  * create_file - create a file and write into it 
  * @filename: the name of the file
