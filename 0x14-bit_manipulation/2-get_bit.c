@@ -1,7 +1,7 @@
 #include "main.h"
 
 /**
- * get_bit - returns the bit value at a specific index.
+ * get_bit - returns the bit value at an index.
  * @num: unsigned long int input.
  * @ind: index of the bit.
  *
@@ -10,12 +10,12 @@
  
 int get_bit(unsigned long int num, unsigned int ind)
 {
-	if (ind >= sizeof(unsigned long int) * 8)
-	{
-		
+	if (ind >= (sizeof(unsigned long int) * 8))
 		return (-1);
-	}
 
-	unsigned long int mask = 1UL << ind;
-	return ((num & mask) ? 1 : 0); 
+	if ((num & (1 << ind)) == 0)
+		return (0);
+
+	return (1);
 }
+
