@@ -12,5 +12,6 @@ void print_chessboard(char (*a)[8]);
 void print_diagsums(int *a, int size);
 void set_string(char **s, char *to);
 unsigned int binary_to_uint(const char *b);
+void print_binary(unsigned long int number);
 
 #endif
