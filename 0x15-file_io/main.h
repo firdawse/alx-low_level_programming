@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+ssize_t read_textfile(const char *filename, size_t letters);
 int _strncmp(const char *s1, const char *s2, size_t n);
 void elf_close(int fd);
 void file_read(int fd, char *buf, size_t count);
