@@ -7,12 +7,12 @@
  * read_textfile-  it fisrt read texfile then  print to STDOUT.
  * @filename: the textfile that will be read
  * @letters: nbr of letterss not  read
- * Return: n - nbr of bytes read
+ * Return: w - nbr of bytes read
  *         0 if function fails or filename is NULL.
  */
 ssize_t read_textfile(const char *filename, size_t letters)
 {
-	char *buffer;
+		char *buffer;
 	ssize_t o, r, w;
 
 	if (filename == NULL)
