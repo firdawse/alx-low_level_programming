@@ -1,0 +1,22 @@
+#ifndef DLISTS
+#define DLISTS
+#include <stddef.h>
+
+/**
+ * struct dlistint_s - doubly linked list
+ * @n: int
+ * @prev: points to the previous node
+ * @next: next node
+ *
+ * Description: doubly linked list node structure
+ *
+ */
+typedef struct dlistint_s
+{
+	int n;
+	struct dlistint_s *prev;
+	struct dlistint_s *next;
+} dlistint_t;
+
+
+size_t print_dlistint(const dlistint_t *h);
